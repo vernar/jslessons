@@ -19,4 +19,34 @@ let week = [
     'Sunday',
 ];
 
-console.log(typeof (week[0]));
+let currentDay = 'Thursday';
+
+for (let i = 0; i < week.length; i++){
+    let fontWeight = (week[i] === 'Saturday' || week[i] === 'Sunday') ? 'bold' : 'normal';
+    let fontStyle = week[i] === currentDay ? 'italic' : 'normal';
+    document.write (
+        '<p style="font-weight:' + fontWeight + '; font-style: ' + fontStyle +';">'
+        + week[i]
+        + '</p>');
+}
+/*
+2) Создать массив arr = []
+· Записать в него 7 любых многозначных чисел в виде строк
+· Вывести в консоль только те, что начинаются с цифры 3 или 7 (Должны присутствовать в массиве)
+ */
+
+let arr = [
+    '435',
+    '323',
+    '695',
+    '534',
+    '325',
+    '743',
+    '364',
+];
+
+for (let i = 0; i < arr.length; i++){
+    if (arr[i][0] === '7' || arr[i][0] === '3'){
+        console.log(arr[i]);
+    }
+}
