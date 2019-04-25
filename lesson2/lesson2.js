@@ -22,8 +22,8 @@ for (let i = 0; i < 2; i++) {
     let expensesValue = +prompt('Во сколько обойдётся?', '1000');
 
     if (typeof(expensesName) === 'string'
-        && typeof(expensesName) != null
-        && typeof(expensesValue) != null
+        && expensesName != null
+        && expensesValue != null
         && expensesName != ''
         && expensesValue != ''
         && expensesName.length < 50
