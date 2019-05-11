@@ -38,22 +38,51 @@ window.addEventListener('DOMContentLoaded', function () {
     tabSelector(tab, info, tabContent);
 
 
-    let deadline = '2019-6-13 12:00:00';
+    let deadline = '2019-5-12 12:00:00';
 
     function getTimeRemaining(endtime) {
         let endTimestamp = Date.parse(endtime) - Date.parse(new Date());
+//3) У таймера есть проблема (нужно исправить)
+        if (endTimestamp < 0) {
+                return {
+                'total' : endTimestamp,
+                'hours' : 0,
+                'minutes' : 0,
+                'seconds' : 0
+            }
+        }
 
-        let endDate = new Date();
-        endDate.setTime(endTimestamp);
-        let realDays = endDate.getUTCDate() - 1,
-            realHours = endDate.getUTCHours(),
-            realMinutes = endDate.getUTCMinutes(),
-            realSeconds = endDate.getUTCSeconds();
-
-        let secconds = Math.floor((endTimestamp/1000) % 60),
+        let seconds = Math.floor((endTimestamp/1000) % 60),
             minutes = Math.floor((endTimestamp/1000/60) % 60),
             hours = Math.floor(endTimestamp/1000/60/60);
+
+        return {
+            'total' : endTimestamp,
+            'hours' : hours < 10 ? '0' + hours : hours,
+            'minutes' : minutes < 10 ? '0' + minutes : minutes,
+            'seconds' : seconds < 10 ? '0' + seconds : seconds
+        }
+    }
+
+    function setClock(id, endTime) {
+        let timer = document.getElementById(id),
+            hours = timer.querySelector('.hours'),
+            minutes = timer.querySelector('.minutes'),
+            seconds = timer.querySelector('.seconds'),
+            intervalId = setInterval(updateClock, 1000);
+
+        function updateClock() {
+            let t = getTimeRemaining(deadline);
+            hours.textContent = t.hours;
+            minutes.textContent = t.minutes;
+            seconds.textContent = t.seconds;
+
+            if (t.total < 0) {
+                clearInterval(intervalId);
+            }
+        }
     }
 
     getTimeRemaining(deadline);
+    setClock('timer', deadline);
 });
