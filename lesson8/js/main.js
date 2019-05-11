@@ -52,6 +52,7 @@ window.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+//4) Изменить скрипт так, чтобы в таком случае выводилось: 00:00:00
         let seconds = Math.floor((endTimestamp/1000) % 60),
             minutes = Math.floor((endTimestamp/1000/60) % 60),
             hours = Math.floor(endTimestamp/1000/60/60);
@@ -68,8 +69,7 @@ window.addEventListener('DOMContentLoaded', function () {
         let timer = document.getElementById(id),
             hours = timer.querySelector('.hours'),
             minutes = timer.querySelector('.minutes'),
-            seconds = timer.querySelector('.seconds'),
-            intervalId = setInterval(updateClock, 1000);
+            seconds = timer.querySelector('.seconds');
 
         function updateClock() {
             let t = getTimeRemaining(deadline);
@@ -77,10 +77,11 @@ window.addEventListener('DOMContentLoaded', function () {
             minutes.textContent = t.minutes;
             seconds.textContent = t.seconds;
 
-            if (t.total < 0) {
-                clearInterval(intervalId);
+            if (t.total > 0) {
+                setTimeout(updateClock, 1000);
             }
         }
+        updateClock();
     }
 
     getTimeRemaining(deadline);
