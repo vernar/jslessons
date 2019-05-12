@@ -3,10 +3,13 @@
 //3) У вас есть код:
 //· Выведите на экран правильное сообщение, которое берет значение из input
 //· Написать скрипт в отдельном js файле
-let age = document.getElementById('age');
 
-function showUser(surname, name) {
-         alert("Пользователь " + surname + " " + name + ", его возраст " + this.value);
-}
+document.addEventListener('DOMContentLoaded', function () {
+    let age = document.getElementById('age');
 
-showUser();
+    function showUser(surname, name) {
+        alert("Пользователь " + surname + " " + name + ", его возраст " + this.value);
+    }
+
+    showUser.apply(age, ['Arbuzov', 'Dmitry']);
+});
