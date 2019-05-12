@@ -84,6 +84,45 @@ window.addEventListener('DOMContentLoaded', function () {
         updateClock();
     }
 
-    getTimeRemaining(deadline);
     setClock('timer', deadline);
+
+
+//1) Написать скрипт плавной прокрутки страницы при клике на элементы меню, используя чистый JS
+    (function() {
+        let requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+        window.requestAnimationFrame = requestAnimationFrame;
+    })();
+    let navigationMenu = document.querySelector('nav ul');
+
+    function softScroll(element, endPos, stepPos = 10) {
+        let start = performance.now(),
+            startPos = element.scrollTop,
+            direction = startPos < endPos ? 'asc' : 'desk';
+
+        function scroll(timestamp) {
+            let timeLeft = timestamp - start,
+                points = timeLeft / stepPos,
+                curPos = direction === 'asc' ? startPos + points : startPos - points;
+
+            element.scrollTo(0, curPos);
+
+            if ( (curPos < endPos && direction === 'asc') || (curPos > endPos && direction === 'desk')) {
+                requestAnimationFrame(scroll);
+            }
+        }
+        requestAnimationFrame(scroll);
+    }
+
+    navigationMenu.addEventListener('click', function (event) {
+        let targetElement = event.target;
+        if (targetElement.tagName === 'A') {
+            event.preventDefault();
+            let doc = document.documentElement,
+                scrollElement = document.querySelector(targetElement.href.match(/#\w*/)[0]);
+
+            softScroll(doc, scrollElement.offsetTop - 150, 1);
+        }
+
+    });
 });
