@@ -97,19 +97,42 @@ window.addEventListener('DOMContentLoaded', function () {
         overlay = document.querySelector('.overlay'),
         close = document.querySelector('.popup-close');
 
-    more.addEventListener('click', function () {
+    function modalShow() {
         overlay.style.display = 'block';
-        this.classList.add('more-splash');
+        more.classList.add('more-splash');
         document.body.style.overflow = 'hidden';
-    });
+    }
 
-    close.addEventListener('click', function () {
+    function modalHide() {
         overlay.style.display = 'none';
         more.classList.remove('more-splash');
         document.body.style.overflow = '';
+    }
+
+    more.addEventListener('click', function () {
+        modalShow();
+    });
+
+    close.addEventListener('click', function () {
+        modalHide();
+    });
+
+    overlay.addEventListener('click', function () {
+        modalHide();
     });
 
 //2) Привязать модальное окно к кнопкам “Узнать подробнее”
 // в табах. Код не должен дублироваться.
+
+    let moreDescription = document.querySelectorAll('.description-btn');
+
+    moreDescription.forEach(function (item) {
+        item.addEventListener('click', function () {
+            modalShow();
+        });
+    });
+
+
+
 
 });
