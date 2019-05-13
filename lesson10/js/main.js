@@ -67,14 +67,6 @@ class Page {
     _getTimeRemaining(endtime) {
         let now = new Date();
         let endTimestamp = Date.parse(endtime) - now.getTime();
-        if (endTimestamp < 0) {
-            return {
-                'total' : endTimestamp,
-                'hours' : 0,
-                'minutes' : 0,
-                'seconds' : 0
-            }
-        }
 
         let seconds = Math.floor((endTimestamp/1000) % 60),
             minutes = Math.floor((endTimestamp/1000/60) % 60),
@@ -95,11 +87,14 @@ class Page {
             this.minutes.textContent = t.minutes;
             this.seconds.textContent = t.seconds;
 
-            if (t.total > 0) {
-                setTimeout(updateClock, 1000);
+            if (t.total <= 0) {
+                clearInterval(timer);
+                this.hours.textContent = '00';
+                this.minutes.textContent = '00';
+                this.seconds.textContent = '00';
             }
         };
-        updateClock(deadline);
+        let timer = setInterval(updateClock, 1000);
     }
 
     initModal() {

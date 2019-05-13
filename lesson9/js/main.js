@@ -38,20 +38,10 @@ window.addEventListener('DOMContentLoaded', function () {
     tabSelector(tab, info, tabContent);
 
 
-    let deadline = '2019-5-12 12:00:00';
+    let deadline = '2019-5-22 12:00:00';
 
     function getTimeRemaining(endtime) {
         let endTimestamp = Date.parse(endtime) - Date.parse(new Date());
-//3) У таймера есть проблема (нужно исправить)
-        if (endTimestamp < 0) {
-                return {
-                'total' : endTimestamp,
-                'hours' : 0,
-                'minutes' : 0,
-                'seconds' : 0
-            }
-        }
-
 //4) Изменить скрипт так, чтобы в таком случае выводилось: 00:00:00
         let seconds = Math.floor((endTimestamp/1000) % 60),
             minutes = Math.floor((endTimestamp/1000/60) % 60),
@@ -65,11 +55,12 @@ window.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function setClock(id, endTime) {
+    function setClock(id, deadline) {
         let timer = document.getElementById(id),
             hours = timer.querySelector('.hours'),
             minutes = timer.querySelector('.minutes'),
-            seconds = timer.querySelector('.seconds');
+            seconds = timer.querySelector('.seconds'),
+            intervalFunction = setInterval(updateClock, 1000);
 
         function updateClock() {
             let t = getTimeRemaining(deadline);
@@ -77,14 +68,15 @@ window.addEventListener('DOMContentLoaded', function () {
             minutes.textContent = t.minutes;
             seconds.textContent = t.seconds;
 
-            if (t.total > 0) {
-                setTimeout(updateClock, 1000);
+            if (t.total <= 0) {
+                clearInterval(intervalFunction);
+                hours.textContent = '00';
+                minutes.textContent = '00';
+                seconds.textContent = '00';
             }
         }
-        updateClock();
     }
 
-    getTimeRemaining(deadline);
     setClock('timer', deadline);
 
 
