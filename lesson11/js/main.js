@@ -6,6 +6,12 @@ class Page {
         this.startObservers();
     }
 
+    message = {
+        loading: 'Loading',
+        success: 'Thank You! We will contact with you!',
+        failure: 'Something wrong!'
+    };
+
     initData() {
         //tabs elements
         this.tab = document.querySelectorAll('.info-header-tab');
@@ -27,6 +33,12 @@ class Page {
 
         //navigation menu
         this.navigationMenu = document.querySelector('nav ul');
+
+        //form
+        this.form = document.querySelector('.main-form');
+        this.input = this.form.getElementsByTagName('input');
+        this.statusMessage = document.createElement('div');
+        this.statusMessage.classList.add('status');
     }
 
     startObservers() {
@@ -34,6 +46,7 @@ class Page {
         this.initClock(this.deadline);
         this.initModal();
         this.initSoftScroll();
+        this.initAjaxPhoneSend();
     }
 
     initTabSelector (initTabNumber) {
@@ -145,6 +158,41 @@ class Page {
         });
     }
 
+    initAjaxPhoneSend() {
+        this.form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.form.appendChild(this.statusMessage);
+
+            let request = new XMLHttpRequest();
+            request.open('POST', 'server.php');
+            //request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
+            let formData = new FormData(this.form),
+                obj = {};
+            formData.forEach((value, key) => {
+               obj[key] = value;
+            });
+
+            request.send(JSON.stringify(obj));
+
+            request.addEventListener('readystatechange', () => {
+                if (request.readyState < XMLHttpRequest.DONE) {
+                    this.statusMessage.innerHTML = this.message.loading;
+                } else if (request.readyState === XMLHttpRequest.DONE) {
+                    if (request.status === 200) {
+                        this.statusMessage.innerHTML = this.message.success;
+                    } else {
+                        this.statusMessage.innerHTML = this.message.failure;
+                    }
+                }
+            });
+
+            for (let i = 0; i < this.input.length; i++) {
+                this.input[i].value = '';
+            }
+        });
+    }
+
     _softScroll(element, endPos, stepPos = 10) {
         let start = performance.now(),
             startPos = element.scrollTop,
@@ -168,4 +216,6 @@ class Page {
 
 window.addEventListener('DOMContentLoaded', function () {
     let page = new Page();
+
+
 });
