@@ -9,6 +9,7 @@ class PhoneTemplate {
         this.phoneInput = element;
         this.template = template;
         this.curentString = template;
+        this.startPosition = startPos;
         this.keyCode = '';
 
         this.phoneInput.value = template;
@@ -50,6 +51,13 @@ class PhoneTemplate {
             }
 
         });
+    }
+
+    clearField() {
+        this.curentString = this.template;
+        this.phoneInput.value = this.template;
+        this.setCursorPosition(this.startPosition);
+        this.phoneInput.focus();
     }
 
     setInput(text = '') {
@@ -122,10 +130,14 @@ class Page {
 
         //form phone
         this.phoneInput = document.querySelector('.popup-form .popup-form__input');
-        this.form = document.querySelector('.main-form');
-        this.input = this.form.getElementsByTagName('input');
+        this.formPhone = document.querySelector('.main-form');
+        this.input = this.formPhone.getElementsByTagName('input');
         this.statusMessage = document.createElement('div');
         this.statusMessage.classList.add('status');
+
+        //form contacts
+        this.formContacts = document.querySelector('#contact-form');
+        this.inputContacts = document.querySelectorAll('#form input');
     }
 
     startObservers() {
@@ -135,6 +147,7 @@ class Page {
         this.initSoftScroll();
         this.initPhoneChecker();
         this.initAjaxPhoneSend();
+        this.initAjaxContactsSend();
     }
 
     initTabSelector (initTabNumber) {
@@ -224,6 +237,7 @@ class Page {
         this.overlay.style.display = 'block';
         this.more.classList.add('more-splash');
         document.body.style.overflow = 'hidden';
+        this.phoneTemplate.clearField();
     }
 
     modalHide() {
@@ -247,26 +261,52 @@ class Page {
     }
 
     initPhoneChecker() {
-        let template = new PhoneTemplate(this.phoneInput, '+375 (__) ___-__-__', 6);
+        this.phoneTemplate = new PhoneTemplate(this.phoneInput, '+375 (__) ___-__-__', 6);
     }
 
+    _ajaxSendResponce(method, url, formElement) {
+        let formData = new FormData(formElement),
+            request = new XMLHttpRequest(),
+            obj = {};
+        formData.forEach((value, key) => {
+            obj[key] = value;
+        });
+
+        request.open(method, url);
+        request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
+        request.send(JSON.stringify(obj));
+        return request;
+    }
+//1) Подключить скрипт отправки данных с формы к:
+//·        Модальному окну
     initAjaxPhoneSend() {
-        this.form.addEventListener('submit', (event) => {
+        this.formPhone.addEventListener('submit', (event) => {
             event.preventDefault();
-            this.form.appendChild(this.statusMessage);
+            this.formPhone.appendChild(this.statusMessage);
 
-            let request = new XMLHttpRequest();
-            request.open('POST', 'server.php');
-            //request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
-            let formData = new FormData(this.form),
-                obj = {};
-            formData.forEach((value, key) => {
-               obj[key] = value;
+            let request = this._ajaxSendResponce('POST', 'server.php', this.formPhone);
+            request.addEventListener('readystatechange', () => {
+                if (request.readyState < XMLHttpRequest.DONE) {
+                    this.statusMessage.innerHTML = this.message.loading;
+                } else if (request.readyState === XMLHttpRequest.DONE) {
+                    if (request.status === 200) {
+                        this.statusMessage.innerHTML = this.message.success;
+                        this.phoneTemplate.clearField();
+                    } else {
+                        this.statusMessage.innerHTML = this.message.failure;
+                    }
+                }
             });
+        });
+    }
+//1) Подключить скрипт отправки данных с формы к:
+//·        Контактной форме
+    initAjaxContactsSend() {
+        this.formContacts.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.formContacts.appendChild(this.statusMessage);
 
-            request.send(JSON.stringify(obj));
-
+            let request = this._ajaxSendResponce('POST', 'server.php', this.formContacts);
             request.addEventListener('readystatechange', () => {
                 if (request.readyState < XMLHttpRequest.DONE) {
                     this.statusMessage.innerHTML = this.message.loading;
@@ -279,8 +319,8 @@ class Page {
                 }
             });
 
-            for (let i = 0; i < this.input.length; i++) {
-                this.input[i].value = '';
+            for (let i = 0; i < this.inputContacts.length; i++) {
+                this.inputContacts[i].value = '';
             }
         });
     }
@@ -308,6 +348,4 @@ class Page {
 
 window.addEventListener('DOMContentLoaded', function () {
     let page = new Page();
-
-
 });
