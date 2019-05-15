@@ -107,7 +107,9 @@ class Page {
         });
 
         this.overlay.addEventListener('click', () => {
-            this.modalHide();
+            if (this.overlay === event.target) {
+                this.modalHide();
+            }
         });
 
         this.moreDescriptionElements.forEach((item) => {
