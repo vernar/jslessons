@@ -3,20 +3,37 @@ let inputRub = document.getElementById('rub'),
     inputUsd = document.getElementById('usd');
 
 inputRub.addEventListener('input', () => {
-    let request = new XMLHttpRequest();
 
-    request.open('GET', 'js/current.json');
-    request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-    request.send();
-    
-    request.addEventListener('readystatechange', function() {
-        if (request.readyState === 4 && request.status == 200) {
-            let data = JSON.parse(request.response);
+    function sendAjax(method, url) {
+        return new Promise(function(resolve, reject) {
+            let request = new XMLHttpRequest();
+            request.open(method, url);
+            request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 
+            request.onload = function() {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                let error = new Error(this.statusText);
+                error.code = this.status;
+                reject(error);
+              }
+            };
+
+            request.onerror = function() {
+              reject(new Error("Network Error"));
+            };
+
+            request.send();
+        });
+    }
+
+    sendAjax('GET', 'js/current.json')
+        .then(responce => {
+            let data = JSON.parse(response);
             inputUsd.value = inputRub.value / data.usd;
-        } else {
-            inputUsd.value = "Что-то пошло не так!";
-        }
-    });
+        },error => {
+            inputUsd.value = `Что-то пошло не так! error - ${error}`;
+        });
 
 });
