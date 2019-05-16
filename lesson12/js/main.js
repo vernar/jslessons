@@ -278,10 +278,38 @@ class Page {
         request.open(method, url);
         request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
         request.send(JSON.stringify(obj));
+
+
+
+
         return request;
+
     }
-//1) Подключить скрипт отправки данных с формы к:
-//·        Модальному окну
+
+    initMessageObserver(request, object) {
+        request.addEventListener('readystatechange', () => {
+            let promiseProcess =  new Promise((resolve, reject) => {
+                (request.readyState < XMLHttpRequest.DONE) ? resolve() : reject();
+            });
+
+            let promiseResult = new Promise((resolve, reject) => {
+                (request.status === 200) ? resolve() : reject();
+            });
+
+            promiseProcess //inProccess or finished
+                .then(icon => this.statusMessage.innerHTML = this.message.loading)
+                .then(message => this.messageIcon.classList.className = 'message-icon loading-icon')
+                .catch( finished =>
+                    promiseResult//success or error
+                        .then(icon => this.messageIcon.className = 'message-icon success-icon')
+                        .then(message => his.statusMessage.innerHTML = this.message.success)
+                        .then(clear => this.phoneTemplate.clearField())
+                        .catch(icon => this.messageIcon.className = 'message-icon error-icon')
+                        .catch(message => this.statusMessage.innerHTML = this.message.failure)
+                );
+        });
+    };
+
     initAjaxPhoneSend() {
         this.formPhone.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -290,21 +318,23 @@ class Page {
 
 
             let request = this._ajaxSendResponce('POST', 'server.php', this.formPhone);
-            request.addEventListener('readystatechange', () => {
-                if (request.readyState < XMLHttpRequest.DONE) {
-                    this.statusMessage.innerHTML = this.message.loading;
-                    this.messageIcon.classList.add('loading-icon');
-                } else if (request.readyState === XMLHttpRequest.DONE) {
-                    if (request.status === 200) {
-                        this.statusMessage.innerHTML = this.message.success;
-                        this.messageIcon.className = 'message-icon success-icon';
-                        this.phoneTemplate.clearField();
-                    } else {
-                        this.statusMessage.innerHTML = this.message.failure;
-                        this.messageIcon.className = 'message-icon error-icon';
-                    }
-                }
-            });
+            this.initMessageObserver(request, this.formPhone);
+
+            // request.addEventListener('readystatechange', () => {
+            //     if (request.readyState < XMLHttpRequest.DONE) {
+            //         this.statusMessage.innerHTML = this.message.loading;
+            //         this.messageIcon.classList.add('loading-icon');
+            //     } else if (request.readyState === XMLHttpRequest.DONE) {
+            //         if (request.status === 200) {
+            //             this.statusMessage.innerHTML = this.message.success;
+            //             this.messageIcon.className = 'message-icon success-icon';
+            //             this.phoneTemplate.clearField();
+            //         } else {
+            //             this.statusMessage.innerHTML = this.message.failure;
+            //             this.messageIcon.className = 'message-icon error-icon';
+            //         }
+            //     }
+            // });
         });
     }
 //1) Подключить скрипт отправки данных с формы к:
@@ -312,20 +342,23 @@ class Page {
     initAjaxContactsSend() {
         this.formContacts.addEventListener('submit', (event) => {
             event.preventDefault();
+            this.formContacts.appendChild(this.messageIcon);
             this.formContacts.appendChild(this.statusMessage);
 
             let request = this._ajaxSendResponce('POST', 'server.php', this.formContacts);
-            request.addEventListener('readystatechange', () => {
-                if (request.readyState < XMLHttpRequest.DONE) {
-                    this.statusMessage.innerHTML = this.message.loading;
-                } else if (request.readyState === XMLHttpRequest.DONE) {
-                    if (request.status === 200) {
-                        this.statusMessage.innerHTML = this.message.success;
-                    } else {
-                        this.statusMessage.innerHTML = this.message.failure;
-                    }
-                }
-            });
+            this.initMessageObserver(request, this.formContacts);
+            // request.addEventListener('readystatechange', () => {
+            //     if (request.readyState < XMLHttpRequest.DONE) {
+            //         this.statusMessage.innerHTML = this.message.loading;
+            //     } else if (request.readyState === XMLHttpRequest.DONE) {
+            //         if (request.status === 200) {
+            //             this.statusMessage.innerHTML = this.message.success;
+            //         } else {
+            //             this.statusMessage.innerHTML = this.message.failure;
+            //         }
+            //     }
+            // });
+
 
             for (let i = 0; i < this.inputContacts.length; i++) {
                 this.inputContacts[i].value = '';
