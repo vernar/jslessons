@@ -100,12 +100,6 @@ class Page {
         this.startObservers();
     }
 
-    message = {
-        loading: 'Loading',
-        success: 'Thank You! We will contact with you!',
-        failure: 'Something wrong!'
-    };
-
     initData() {
         //tabs elements
         this.tab = document.querySelectorAll('.info-header-tab');
@@ -132,14 +126,17 @@ class Page {
         this.phoneInput = document.querySelector('.popup-form .popup-form__input');
         this.formPhone = document.querySelector('.main-form');
         this.input = this.formPhone.getElementsByTagName('input');
-        this.statusMessage = document.createElement('span');
-        this.statusMessage.classList.add('status');
-        this.messageIcon = document.createElement('div');
-        this.messageIcon.classList.add('message-icon');
 
         //form contacts
         this.formContacts = document.querySelector('#contact-form');
         this.inputContacts = document.querySelectorAll('#form input');
+
+        //messages
+        this.message = {
+            loading: 'Loading',
+            success: 'Thank You! We will contact with you!',
+            failure: 'Something wrong!'
+        };
     }
 
     startObservers() {
@@ -240,14 +237,14 @@ class Page {
         this.more.classList.add('more-splash');
         document.body.style.overflow = 'hidden';
         this.phoneTemplate.clearField();
-        this.messageIcon.className = '';
-        this.statusMessage.innerHTML = '';
     }
 
     modalHide() {
         this.overlay.style.display = 'none';
         this.more.classList.remove('more-splash');
         document.body.style.overflow = '';
+        this.formPhone.querySelector('.status').remove();
+        this.formPhone.querySelector('.message-icon').remove();
     }
 
     initSoftScroll() {
@@ -268,101 +265,106 @@ class Page {
     }
 
     _ajaxSendResponce(method, url, formElement) {
-        let formData = new FormData(formElement),
-            request = new XMLHttpRequest(),
-            obj = {};
-        formData.forEach((value, key) => {
-            obj[key] = value;
+//1) Переписать скрипт для отправки данных с формы, используя промисы
+        return new Promise(function(resolve, reject) {
+            let formData = new FormData(formElement),
+                request = new XMLHttpRequest(),
+                obj = {};
+            formData.forEach((value, key) => {
+                obj[key] = value;
+            });
+
+            request.open(method, url);
+            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
+
+            request.onload = function() {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                let error = new Error(this.statusText);
+                error.code = this.status;
+                reject(error);
+              }
+            };
+
+            request.onerror = function() {
+                console.log('erorr2');
+              reject(new Error("Network Error"));
+            };
+
+            request.send(JSON.stringify(obj));
         });
-
-        request.open(method, url);
-        request.setRequestHeader('Content-Type', 'application/json; charset=utf-8;');
-        request.send(JSON.stringify(obj));
-
-
-
-
-        return request;
-
     }
-
-    initMessageObserver(request, object) {
-        request.addEventListener('readystatechange', () => {
-            let promiseProcess =  new Promise((resolve, reject) => {
-                (request.readyState < XMLHttpRequest.DONE) ? resolve() : reject();
-            });
-
-            let promiseResult = new Promise((resolve, reject) => {
-                (request.status === 200) ? resolve() : reject();
-            });
-
-            promiseProcess //inProccess or finished
-                .then(icon => this.statusMessage.innerHTML = this.message.loading)
-                .then(message => this.messageIcon.classList.className = 'message-icon loading-icon')
-                .catch( finished =>
-                    promiseResult//success or error
-                        .then(icon => this.messageIcon.className = 'message-icon success-icon')
-                        .then(message => his.statusMessage.innerHTML = this.message.success)
-                        .then(clear => this.phoneTemplate.clearField())
-                        .catch(icon => this.messageIcon.className = 'message-icon error-icon')
-                        .catch(message => this.statusMessage.innerHTML = this.message.failure)
-                );
-        });
-    };
 
     initAjaxPhoneSend() {
         this.formPhone.addEventListener('submit', (event) => {
             event.preventDefault();
-            this.formPhone.appendChild(this.messageIcon);
-            this.formPhone.appendChild(this.statusMessage);
+            let statusMessage = this.formPhone.querySelector('.status'),
+                messageIcon = this.formPhone.querySelector('.message-icon');
 
+            if (!statusMessage){
+                statusMessage = document.createElement('span');
+                statusMessage.className = 'status';
+                this.formPhone.appendChild(statusMessage);
+            }
+            if (!messageIcon){
+                messageIcon = document.createElement('div');
+                messageIcon.className = 'message-icon';
+                this.formPhone.appendChild(messageIcon);
+            }
 
-            let request = this._ajaxSendResponce('POST', 'server.php', this.formPhone);
-            this.initMessageObserver(request, this.formPhone);
-
-            // request.addEventListener('readystatechange', () => {
-            //     if (request.readyState < XMLHttpRequest.DONE) {
-            //         this.statusMessage.innerHTML = this.message.loading;
-            //         this.messageIcon.classList.add('loading-icon');
-            //     } else if (request.readyState === XMLHttpRequest.DONE) {
-            //         if (request.status === 200) {
-            //             this.statusMessage.innerHTML = this.message.success;
-            //             this.messageIcon.className = 'message-icon success-icon';
-            //             this.phoneTemplate.clearField();
-            //         } else {
-            //             this.statusMessage.innerHTML = this.message.failure;
-            //             this.messageIcon.className = 'message-icon error-icon';
-            //         }
-            //     }
-            // });
+            statusMessage.innerHTML = this.message.loading;
+            messageIcon.className = ('message-icon loading-icon');
+            this._ajaxSendResponce('POST', 'server.php', this.formPhone)
+                .then(
+                    responce =>  {
+                        statusMessage.innerHTML = this.message.success;
+                        messageIcon.className = 'message-icon success-icon';
+                        this.phoneTemplate.clearField();
+                    },error =>  {
+                        statusMessage.innerHTML = this.message.failure;
+                        messageIcon.className = 'message-icon error-icon';
+                    }
+                );
         });
     }
-//1) Подключить скрипт отправки данных с формы к:
-//·        Контактной форме
+
     initAjaxContactsSend() {
         this.formContacts.addEventListener('submit', (event) => {
             event.preventDefault();
-            this.formContacts.appendChild(this.messageIcon);
-            this.formContacts.appendChild(this.statusMessage);
+            let statusMessage = this.formContacts.querySelector('.status'),
+                messageIcon = this.formContacts.querySelector('.message-icon');
 
-            let request = this._ajaxSendResponce('POST', 'server.php', this.formContacts);
-            this.initMessageObserver(request, this.formContacts);
-            // request.addEventListener('readystatechange', () => {
-            //     if (request.readyState < XMLHttpRequest.DONE) {
-            //         this.statusMessage.innerHTML = this.message.loading;
-            //     } else if (request.readyState === XMLHttpRequest.DONE) {
-            //         if (request.status === 200) {
-            //             this.statusMessage.innerHTML = this.message.success;
-            //         } else {
-            //             this.statusMessage.innerHTML = this.message.failure;
-            //         }
-            //     }
-            // });
-
-
-            for (let i = 0; i < this.inputContacts.length; i++) {
-                this.inputContacts[i].value = '';
+            if (!statusMessage){
+                statusMessage = document.createElement('span');
+                statusMessage.className = 'status';
+                this.formContacts.appendChild(statusMessage);
             }
+            if (!messageIcon){
+                messageIcon = document.createElement('div');
+                messageIcon.className = 'message-icon';
+                this.formContacts.appendChild(messageIcon);
+            }
+
+            statusMessage.innerHTML = this.message.loading;
+            messageIcon.className = ('message-icon loading-icon');
+            this._ajaxSendResponce('POST', 'server.php', this.formContacts)
+                .then(
+                    responce =>  {
+                        statusMessage.innerHTML = this.message.success;
+                        messageIcon.className = 'message-icon success-icon';
+                        for (let i = 0; i < this.inputContacts.length; i++) {
+                            this.inputContacts[i].value = '';
+                        }
+                        setTimeout(()=>{
+                            statusMessage.remove();
+                            messageIcon.remove();
+                        }, 5000)
+                    },error =>  {
+                        statusMessage.innerHTML = this.message.failure;
+                        messageIcon.className = 'message-icon error-icon';
+                    }
+                );
         });
     }
 
@@ -384,7 +386,6 @@ class Page {
         }
         requestAnimationFrame(scroll);
     }
-
 }
 
 window.addEventListener('DOMContentLoaded', function () {
