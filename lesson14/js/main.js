@@ -1,15 +1,20 @@
 'use strict';
 $(document).ready(() => {
     function toggleModal() {
+        let yStartPos = -800,
+            yEndPos = 0;
+        if ($('.overlay').first().css('display') === "block") {
+            yStartPos = 0;
+            yEndPos = -800;
+        }
+
         $('.overlay').fadeToggle('slow');
         $('.modal')
-            .fadeToggle('slow')
-            .css({top:-800,position:'absolute'})
+            .css({display:'block',top: yStartPos,position:'absolute'})
             .animate({
-            top: 0,
+            top: yEndPos,
         }, 1000);
     }
-
 
     $('.list-item:first').hover(() => {
         $(this).toggleClass('active');
@@ -20,6 +25,5 @@ $(document).ready(() => {
     $(".main_nav [href^='#sheldure']").on('click', () => toggleModal());
 
     $('.overlay').on('click', () => toggleModal());
-
-
+    $('.close').on('click', () => toggleModal());
 });
