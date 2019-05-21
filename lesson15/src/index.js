@@ -66,6 +66,15 @@ class Page {
     startObservers() {
         this.initAjaxPhoneSend();
         this.initAjaxContactsSend();
+
+        document.querySelectorAll('.description-btn').forEach((item) => {
+            item.addEventListener('mouseover', (event) => {
+                event.target.classList.add('more-splash');
+            });
+            item.addEventListener('mouseleave', (event) => {
+                event.target.classList.remove('more-splash');
+            });
+        });
     }
 
     initAjaxPhoneSend() {
