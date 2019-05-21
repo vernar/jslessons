@@ -170,11 +170,11 @@ class Calculator {
 
         this.calcTotalValue.innerHTML = '0';
         this.persons.addEventListener('input', (event) => {
-            event.target.value = event.target.value.replace(/[^\d]/g, '');
+            event.target.value = event.target.value.replace(/^0|[^\d]/g, '');
             this._calculate();
         });
         this.restDays.addEventListener('input', (event) => {
-            event.target.value = event.target.value.replace(/[^\d]/g, '');
+            event.target.value = event.target.value.replace(/^0|[^\d]/g, '');
             this._calculate();
         });
         this.place.addEventListener('change', () => this._calculate());
