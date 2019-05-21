@@ -3,9 +3,46 @@
 String.prototype.replaceAt=function(index, replacement) {
     return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
 };
+let PhoneTemplate = require('./PhoneTemplate.js'),
+    TabSelector = require('./TabSelector.js'),
+    Clock = require('./Clock.js'),
+    ModalWindow = require('./ModalWindow.js'),
+    SoftScroll = require('./SoftScroll.js'),
+    AjaxSend = require('./AjaxSend.js'),
+    Slider = require('./Slider.js'),
+    Calculator = require('./Calculator.js');
+
+window.addEventListener('DOMContentLoaded', function () {
+    let sliderElements = {
+        sliders: document.querySelectorAll('.slider-item'),
+        prev: document.querySelector('.prev'),
+        next: document.querySelector('.next'),
+        dotsWrap: document.querySelector('.slider-dots'),
+        dots: document.querySelectorAll('.dot'),
+    };
+
+    let calculatorElements = {
+        persons: document.querySelectorAll('.counter-block-input')[0],
+        restDays: document.querySelectorAll('.counter-block-input')[1],
+        place: document.getElementById('select'),
+        calcTotalValue: document.querySelector('#total'),
+    };
+
+    let tabSelector = new TabSelector(0, '.info-header-tab', '.info-header', '.info-tabcontent'),
+        phone = new Clock('2019-5-22 12:00:00', 'timer', '.hours', '.minutes', '.seconds'),
+        softScroll = new SoftScroll('nav ul'),
+        phoneTemplate = new PhoneTemplate('.popup-form .popup-form__input', '+375 (__) ___-__-__', 6),
+        modalWindow = new ModalWindow('.more', '.overlay', '.popup-close', '.description-btn', '.main-form', phoneTemplate),
+        ajaxSend = new AjaxSend(),
+        slider = new Slider(sliderElements),
+        calculator = new Calculator(calculatorElements),
+        page = new Page(ajaxSend, phoneTemplate);
+});
 
 class Page {
-    constructor(){
+    constructor(ajaxSend, phoneTemplate){
+        this.ajaxSend = ajaxSend;
+        this.phoneTemplate = phoneTemplate;
         this.initData();
         this.startObservers();
     }
@@ -50,7 +87,7 @@ class Page {
 
             statusMessage.innerHTML = this.message.loading;
             messageIcon.className = ('message-icon loading-icon');
-            ajaxSend.ajaxSendResponce('POST', 'server.php', this.formPhone)
+            this.ajaxSend.ajaxSendResponce('POST', 'server.php', this.formPhone)
                 .then(
                     responce =>  {
                         statusMessage.innerHTML = this.message.success;
@@ -83,7 +120,7 @@ class Page {
 
             statusMessage.innerHTML = this.message.loading;
             messageIcon.className = ('message-icon loading-icon');
-            ajaxSend.ajaxSendResponce('POST', 'server.php', this.formContacts)
+            this.ajaxSend.ajaxSendResponce('POST', 'server.php', this.formContacts)
                 .then(
                     responce =>  {
                         statusMessage.innerHTML = this.message.success;
@@ -104,39 +141,4 @@ class Page {
     }
 }
 
-window.addEventListener('DOMContentLoaded', function () {
 
-    let PhoneTemplate = require('./PhoneTemplate.js'),
-        TabSelector = require('./TabSelector.js'),
-        Clock = require('./Clock.js'),
-        ModalWindow = require('./ModalWindow.js'),
-        SoftScroll = require('./SoftScroll.js'),
-        AjaxSend = require('./AjaxSend.js'),
-        Slider = require('./Slider.js'),
-        Calculator = require('./Calculator.js');
-
-    let sliderElements = {
-        sliders: document.querySelectorAll('.slider-item'),
-        prev: document.querySelector('.prev'),
-        next: document.querySelector('.next'),
-        dotsWrap: document.querySelector('.slider-dots'),
-        dots: document.querySelectorAll('.dot'),
-    };
-
-    let calculatorElements = {
-        persons: document.querySelectorAll('.counter-block-input')[0],
-        restDays: document.querySelectorAll('.counter-block-input')[1],
-        place: document.getElementById('select'),
-        calcTotalValue: document.querySelector('#total'),
-    };
-
-    let tabSelector = new TabSelector(0, '.info-header-tab', '.info-header', '.info-tabcontent'),
-        phone = new Clock('2019-5-22 12:00:00', 'timer', '.hours', '.minutes', '.seconds'),
-        modalWindow = new ModalWindow('.more', '.overlay', '.popup-close', '.description-btn'),
-        softScroll = new SoftScroll('nav ul'),
-        phoneTemplate = new PhoneTemplate('.popup-form .popup-form__input', '+375 (__) ___-__-__', 6),
-        ajaxSend = new AjaxSend(),
-        slider = new Slider(sliderElements),
-        calculator = new Calculator(calculatorElements),
-        page = new Page();
-});

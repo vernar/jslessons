@@ -1,12 +1,16 @@
 'use strict';
 
 class ModalWindow {
-    constructor(moreClass, overlayClass, closeClass, moreDescriptionClass) {
+    constructor(moreClass, overlayClass, closeClass, moreDescriptionClass, phoneFormClass, phoneTemplate) {
         //modal window elements
         this.more = document.querySelector(moreClass);
         this.overlay = document.querySelector(overlayClass);
         this.close = document.querySelector(closeClass);
         this.moreDescriptionElements = document.querySelectorAll(moreDescriptionClass);
+        this.formPhone = document.querySelector(phoneFormClass);
+        this.input = this.formPhone.getElementsByTagName('input');
+
+        this.phoneTemplate = phoneTemplate;
         this.initModal();
     }
 
@@ -43,8 +47,11 @@ class ModalWindow {
         this.overlay.style.display = 'none';
         this.more.classList.remove('more-splash');
         document.body.style.overflow = '';
-        this.formPhone.querySelector('.status').remove();
-        this.formPhone.querySelector('.message-icon').remove();
+        if (this.formPhone.querySelector('.status')) {
+            this.formPhone.querySelector('.status').remove();
+            this.formPhone.querySelector('.message-icon').remove();
+        }
+
     }
 
 }
