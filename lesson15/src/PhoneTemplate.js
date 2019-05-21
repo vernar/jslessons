@@ -14,6 +14,13 @@ class PhoneTemplate {
         this.startObservers();
     }
 
+    isValid() {
+        if (this.curentString.indexOf('_') === -1) {
+            return true;
+        }
+        return false;
+    }
+
     startObservers() {
         document.addEventListener('keydown', (event) => {
             this.keyCode = event.key;

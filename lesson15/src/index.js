@@ -31,18 +31,20 @@ window.addEventListener('DOMContentLoaded', function () {
     let tabSelector = new TabSelector(0, '.info-header-tab', '.info-header', '.info-tabcontent'),
         phone = new Clock('2019-5-22 12:00:00', 'timer', '.hours', '.minutes', '.seconds'),
         softScroll = new SoftScroll('nav ul'),
-        phoneTemplate = new PhoneTemplate('.popup-form .popup-form__input', '+375 (__) ___-__-__', 6),
-        modalWindow = new ModalWindow('.more', '.overlay', '.popup-close', '.description-btn', '.main-form', phoneTemplate),
+        phoneTemplateModal = new PhoneTemplate('.popup-form .popup-form__input', '+375 (__) ___-__-__', 6),
+        phoneTemplateContacts = new PhoneTemplate('#contact-form input[name=phone]', '+375 (__) ___-__-__', 6),
+        modalWindow = new ModalWindow('.more', '.overlay', '.popup-close', '.description-btn', '.main-form', phoneTemplateModal),
         ajaxSend = new AjaxSend(),
         slider = new Slider(sliderElements),
         calculator = new Calculator(calculatorElements),
-        page = new Page(ajaxSend, phoneTemplate);
+        page = new Page(ajaxSend, phoneTemplateModal, phoneTemplateContacts);
 });
 
 class Page {
-    constructor(ajaxSend, phoneTemplate){
+    constructor(ajaxSend, phoneTemplateModal, phoneTemplateContacts){
         this.ajaxSend = ajaxSend;
-        this.phoneTemplate = phoneTemplate;
+        this.phoneTemplateModal = phoneTemplateModal;
+        this.phoneTemplateContacts = phoneTemplateContacts;
         this.initData();
         this.startObservers();
     }
@@ -53,22 +55,46 @@ class Page {
 
         //form contacts
         this.formContacts = document.querySelector('#contact-form');
-        this.inputContacts = document.querySelectorAll('#form input');
+        this.inputContacts = document.querySelectorAll('#contact-form input');
 
         //messages
         this.message = {
             loading: 'Loading',
             success: 'Thank You! We will contact with you!',
-            failure: 'Something wrong!'
+            failure: 'Something wrong!',
+            invalidPhone: 'Phone number is invalid!'
         };
     }
 
     startObservers() {
         this.initAjaxPhoneSend();
         this.initAjaxContactsSend();
+
+        document.querySelectorAll('.description-btn').forEach((item) => {
+            item.addEventListener('mouseover', (event) => {
+                event.target.classList.add('more-splash');
+            });
+            item.addEventListener('mouseleave', (event) => {
+                event.target.classList.remove('more-splash');
+            });
+        });
     }
 
     initAjaxPhoneSend() {
+        let formButton = document.querySelector('.popup-form__btn'),
+            inputPhone = document.querySelector('#phone');
+        formButton.addEventListener('mouseover', (event) => {
+            if (this.phoneTemplateModal.isValid() !== true) {
+                inputPhone.setCustomValidity(this.message.invalidPhone);
+            } else {
+                inputPhone.setCustomValidity('');
+            }
+        });
+        formButton.addEventListener('mouseleave', (event) => {
+            inputPhone.setCustomValidity('');
+        });
+
+
         this.formPhone.addEventListener('submit', (event) => {
             event.preventDefault();
             let statusMessage = this.formPhone.querySelector('.status'),
@@ -92,7 +118,7 @@ class Page {
                     responce =>  {
                         statusMessage.innerHTML = this.message.success;
                         messageIcon.className = 'message-icon success-icon';
-                        this.phoneTemplate.clearField();
+                        this.phoneTemplateModal.clearField();
                     },error =>  {
                         statusMessage.innerHTML = this.message.failure;
                         messageIcon.className = 'message-icon error-icon';
@@ -102,6 +128,20 @@ class Page {
     }
 
     initAjaxContactsSend() {
+        let formButton = document.querySelector('#contact-form button'),
+            inputPhone = document.querySelector('#contact-form input[name=phone]');
+        formButton.addEventListener('mouseover', (event) => {
+            if (this.phoneTemplateContacts.isValid() !== true) {
+                inputPhone.focus();
+                inputPhone.setCustomValidity(this.message.invalidPhone);
+            } else {
+                inputPhone.setCustomValidity('');
+            }
+        });
+        formButton.addEventListener('mouseleave', (event) => {
+            inputPhone.setCustomValidity('');
+        });
+
         this.formContacts.addEventListener('submit', (event) => {
             event.preventDefault();
             let statusMessage = this.formContacts.querySelector('.status'),
@@ -132,11 +172,13 @@ class Page {
                             statusMessage.remove();
                             messageIcon.remove();
                         }, 5000);
+                        this.phoneTemplateContacts.clearField();
                     },error =>  {
                         statusMessage.innerHTML = this.message.failure;
                         messageIcon.className = 'message-icon error-icon';
                     }
                 );
+
         });
     }
 }
